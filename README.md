@@ -12,4 +12,4 @@ Etapes suivies :
 
 ## Usage
 
-sh spark-submit script.py Brisbane_CityBike.json results.csv
+     sh spark-submit script.py Brisbane_CityBike.json results.csv
