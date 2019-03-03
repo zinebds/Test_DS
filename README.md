@@ -9,3 +9,7 @@ Etapes suivies :
   La variance exoliquée sur les deux premiers axes est de 90%
   4. Applique l'algorithme Kmeans, pour une classification non supervisée, après analyse des coùts et vu la taille des données, le nombre de clusters a été fixé à 4.
   5. Plot des résultats et sauvegarde des données
+
+## Usage
+
+sh spark-submit script.py Brisbane_CityBike.json results.csv

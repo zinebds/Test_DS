@@ -1,12 +1,25 @@
 # Creation du sparkContext 
+import sys
+import pyspark
 from pyspark.sql import SQLContext
+import logging
 
-path_to_data = '/home/jovyan/Brisbane_CityBike.json'
-path_to_save_data ='/home/jovyan/resultat.csv'
-pathe_to_save_model = '/home/jovyan/clustering_model'
+# Validaiton des arguments
+arguments = sys.argv
+if (len(arguments)<3):
+	logging.error("le nombre de paramétres est insuffisant")
+	logging.error("merci de respecter le format suivant: COMMAND fichier_de_donnees fichier_resultat")
+	exit()
+
+path_to_data = arguments[1]
+path_to_save_data =arguments[2]
+
 sc = pyspark.SparkContext('local[*]')
 spark = SQLContext(sc)
 data = spark.read.format('json').option('header','true').load(path_to_data)
+
+# Réduction du bruit de log
+sc.setLogLevel("ERROR")
 
 # Import libraries
 from pyspark.ml.feature import PCA
@@ -43,10 +56,10 @@ for k in range(2,10):
     kmeans = KMeans().setK(k).setSeed(1).setFeaturesCol("pcaFeatures")
     model = kmeans.fit(df_pca)
     cost[k] = model.computeCost(df_pca) # requires Spark 2.0 or later
-fig, ax = plt.subplots(1,1, figsize =(8,6))
-ax.plot(range(2,10),cost[2:10])
-ax.set_xlabel('k')
-ax.set_ylabel('cost')
+#fig, ax = plt.subplots(1,1, figsize =(8,6))
+#ax.plot(range(2,10),cost[2:10])
+#ax.set_xlabel('k')
+#ax.set_ylabel('cost')
 
 # We choose to predict 4 clusters
 k = 4
@@ -85,24 +98,20 @@ df_new = df_new.drop('index')
 to_plot = df_new.toPandas()
 
 ## 2D
-fig, ax = plt.subplots()
-
-colors = {'D':'red', 'E':'blue', 'F':'green', 'G':'black'}
-
-ax.scatter(to_plot['_1'], to_plot['_2'], c=to_plot['prediction'])
-
-plt.show()
+#fig, ax = plt.subplots()
+#colors = {'D':'red', 'E':'blue', 'F':'green', 'G':'black'}
+#ax.scatter(to_plot['_1'], to_plot['_2'], c=to_plot['prediction'])
+#plt.show()
 
 ## 3D
-threedee = plt.figure(figsize=(12,10)).gca(projection='3d')
-threedee.scatter(to_plot['_1'], to_plot['_2'], to_plot['_3'], c=to_plot['prediction'])
-threedee.set_xlabel('x')
-threedee.set_ylabel('y')
-threedee.set_zlabel('z')
-plt.show()
+#threedee = plt.figure(figsize=(12,10)).gca(projection='3d')
+#threedee.scatter(to_plot['_1'], to_plot['_2'], to_plot['_3'], c=to_plot['prediction'])
+#threedee.set_xlabel('x')
+#threedee.set_ylabel('y')
+#threedee.set_zlabel('z')
+#plt.show()
 
 #Save data
-path_to_save_data ='/home/jovyan/resultats.csv'
 real_data.select('name','address','latitude','longitude','number','prediction').repartition(1).write.format("csv").save(path_to_save_data,header = 'true')
 
 sc.stop()
